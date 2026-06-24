@@ -23,13 +23,13 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore
-        run: dotnet restore
+      - name: Restore library
+        run: dotnet restore ./Groenteboer.Technova/Groenteboer.Technova.csproj
 
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
+      - name: Build library
+        run: dotnet build ./Groenteboer.Technova/Groenteboer.Technova.csproj --configuration Release --no-restore
 
-      - name: Pack
+      - name: Pack library
         run: dotnet pack ./Groenteboer.Technova/Groenteboer.Technova.csproj --configuration Release --no-build --output ./artifacts
 
       - name: Login to NuGet.org
