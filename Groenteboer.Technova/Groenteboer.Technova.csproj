@@ -10,8 +10,10 @@
     <Company>Technova</Company>
     <Product>Technova.Groenteboer</Product>
     <Description>A library for students at Technova working on the Groenteboer Project</Description>
-    <PackageTags>technova;groenteboer;scale;dymo;hid;education</PackageTags>
+    <PackageTags>technova;groenteboer;</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/markvanmeerten/Technova.Groenteboer</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
