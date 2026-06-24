@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>Technova.Groenteboer</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Mark van Meerten</Authors>
+    <Company>Technova</Company>
+    <Product>Technova.Groenteboer</Product>
+    <Description>A library for students at Technova working on the Groenteboer Project</Description>
+    <PackageTags>technova;groenteboer;scale;dymo;hid;education</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HidSharp" Version="2.6.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>
