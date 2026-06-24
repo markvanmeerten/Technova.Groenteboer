@@ -1,8 +1,10 @@
 name: Publish NuGet Package
 
-on:
-  release:
-    types: [published]
+'on':
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
 
 permissions:
   contents: read
