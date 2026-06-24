@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>Technova.Groenteboer</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.1.2</Version>
     <Authors>Mark van Meerten</Authors>
     <Company>Technova</Company>
     <Product>Technova.Groenteboer</Product>
