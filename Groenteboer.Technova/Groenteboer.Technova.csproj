@@ -6,7 +6,7 @@
     <TargetFramework>net472</TargetFramework>
     <LangVersion>7.3</LangVersion>
     <PackageId>Technova.Groenteboer</PackageId>
-    <Version>0.1.2</Version>
+    <Version>0.2.1</Version>
     <Authors>Mark van Meerten</Authors>
     <Company>Technova</Company>
     <Product>Technova.Groenteboer</Product>
