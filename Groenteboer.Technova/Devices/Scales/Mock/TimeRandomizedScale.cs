@@ -1,9 +1,13 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Groenteboer.Technova.Devices.Scales.Mock
 {
     public abstract class TimeRandomizedScale : Scale
     {
-        private CancellationTokenSource? _cts;
-        private Task? _simulationTask;
+        private CancellationTokenSource _cts;
+        private Task _simulationTask;
         private readonly object _lifecycleLock = new object();
         private readonly Random _random = new Random();
 
@@ -21,17 +25,26 @@ namespace Groenteboer.Technova.Devices.Scales.Mock
         {
             lock (_lifecycleLock)
             {
-                if (_simulationTask is { IsCompleted: false })
+                if (_simulationTask != null && !_simulationTask.IsCompleted)
                 {
                     return;
                 }
 
-                _cts?.Dispose();
+                if (_cts != null)
+                {
+                    _cts.Dispose();
+                }
+
                 _cts = new CancellationTokenSource();
 
                 SetStatus(ScaleStatus.Ready);
 
-                _simulationTask = Task.Run(() => RunSimulation(_cts.Token));
+                CancellationToken token = _cts.Token;
+
+                _simulationTask = Task.Run(delegate
+                {
+                    return RunSimulation(token);
+                });
             }
         }
 
@@ -39,14 +52,21 @@ namespace Groenteboer.Technova.Devices.Scales.Mock
         {
             lock (_lifecycleLock)
             {
-                var cts = _cts;
-
-                cts?.Cancel();
-                _cts = null;
+                CancellationTokenSource cts = _cts;
 
                 if (cts != null)
                 {
-                    _simulationTask?.ContinueWith(_ => cts.Dispose());
+                    cts.Cancel();
+                }
+
+                _cts = null;
+
+                if (cts != null && _simulationTask != null)
+                {
+                    _simulationTask.ContinueWith(delegate
+                    {
+                        cts.Dispose();
+                    });
                 }
             }
 
@@ -83,7 +103,6 @@ namespace Groenteboer.Technova.Devices.Scales.Mock
             for (int i = 1; i <= steps; i++)
             {
                 double progress = (double)i / steps;
-
                 double weight = targetWeight * progress;
 
                 weight += _random.NextDouble() * 40 - 20;

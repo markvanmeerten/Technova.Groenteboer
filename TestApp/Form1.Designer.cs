@@ -1,4 +1,7 @@
-﻿namespace TestApp
+﻿using System.Drawing;
+using System.Windows.Forms;
+
+namespace TestApp
 {
     partial class Form1
     {

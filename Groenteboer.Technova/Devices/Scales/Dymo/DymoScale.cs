@@ -1,4 +1,8 @@
 using HidSharp;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Groenteboer.Technova.Devices.Scales.Dymo
 {
@@ -7,8 +11,8 @@ namespace Groenteboer.Technova.Devices.Scales.Dymo
         private readonly int _vendorId;
         private readonly int _productId;
 
-        private CancellationTokenSource? _cts;
-        private Task? _readTask;
+        private CancellationTokenSource _cts;
+        private Task _readTask;
         private readonly object _lifecycleLock = new object();
 
         protected DymoScale(int productId, int vendorId = 0x0922, string name = "Dymo")
@@ -29,15 +33,23 @@ namespace Groenteboer.Technova.Devices.Scales.Dymo
         {
             lock (_lifecycleLock)
             {
-                if (_readTask is { IsCompleted: false })
+                if (_readTask != null && !_readTask.IsCompleted)
                 {
                     return;
                 }
 
-                _cts?.Dispose();
-                _cts = new CancellationTokenSource();
+                if (_cts != null)
+                {
+                    _cts.Dispose();
+                }
 
-                _readTask = Task.Run(() => ReadLoop(_cts.Token));
+                _cts = new CancellationTokenSource();
+                CancellationToken token = _cts.Token;
+
+                _readTask = Task.Run(delegate
+                {
+                    ReadLoop(token);
+                });
             }
         }
 
@@ -45,14 +57,21 @@ namespace Groenteboer.Technova.Devices.Scales.Dymo
         {
             lock (_lifecycleLock)
             {
-                var cts = _cts;
-
-                cts?.Cancel();
-                _cts = null;
+                CancellationTokenSource cts = _cts;
 
                 if (cts != null)
                 {
-                    _readTask?.ContinueWith(_ => cts.Dispose());
+                    cts.Cancel();
+                }
+
+                _cts = null;
+
+                if (cts != null && _readTask != null)
+                {
+                    _readTask.ContinueWith(delegate
+                    {
+                        cts.Dispose();
+                    });
                 }
             }
 
@@ -70,33 +89,34 @@ namespace Groenteboer.Technova.Devices.Scales.Dymo
                 if (device == null)
                 {
                     SetStatus(ScaleStatus.Disconnected);
-
                     return;
                 }
 
-                using var stream = device.Open();
-                stream.ReadTimeout = 250;
-
-                byte[] buffer = new byte[device.GetMaxInputReportLength()];
-
-                while (!token.IsCancellationRequested)
+                using (var stream = device.Open())
                 {
-                    try
-                    {
-                        int count = stream.Read(buffer);
+                    stream.ReadTimeout = 250;
 
-                        if (count >= 6)
+                    byte[] buffer = new byte[device.GetMaxInputReportLength()];
+
+                    while (!token.IsCancellationRequested)
+                    {
+                        try
                         {
-                            ReadWeightFromBuffer(buffer);
+                            int count = stream.Read(buffer);
+
+                            if (count >= 6)
+                            {
+                                ReadWeightFromBuffer(buffer);
+                            }
                         }
-                    }
-                    catch (TimeoutException)
-                    {
-                        // No new weight received.
-                    }
-                    catch (Exception ex)
-                    {
-                        ReportError(ex.Message);
+                        catch (TimeoutException)
+                        {
+                            // No new weight received.
+                        }
+                        catch (Exception ex)
+                        {
+                            ReportError(ex.Message);
+                        }
                     }
                 }
             }
@@ -116,7 +136,6 @@ namespace Groenteboer.Technova.Devices.Scales.Dymo
             if (unit == 0)
             {
                 SetStatus(ScaleStatus.Standby);
-
                 return;
             }
 
@@ -127,17 +146,18 @@ namespace Groenteboer.Technova.Devices.Scales.Dymo
 
             double weight = rawWeight * Math.Pow(10, exponent);
 
-            string unitText = unit switch
-            {
-                2 => "g",
-                3 => "kg",
-                11 => "oz",
-                12 => "lb",
-                _ => ""
-            };
+            string unitText = "";
+
+            if (unit == 2)
+                unitText = "g";
+            else if (unit == 3)
+                unitText = "kg";
+            else if (unit == 11)
+                unitText = "oz";
+            else if (unit == 12)
+                unitText = "lb";
 
             SetStatus(ScaleStatus.Ready);
-
             SetWeight(weight, unitText);
         }
     }

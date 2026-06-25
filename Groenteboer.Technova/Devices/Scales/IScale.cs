@@ -1,4 +1,6 @@
-﻿namespace Groenteboer.Technova.Devices.Scales
+﻿using System;
+
+namespace Groenteboer.Technova.Devices.Scales
 {
     public interface IScale : IDisposable
     {
@@ -6,9 +8,9 @@
         string CurrentUnit { get; }
         ScaleStatus Status { get; }
 
-        event EventHandler<ScaleWeightChangedEventArgs>? WeightChanged;
-        event EventHandler<ScaleStatusChangedEventArgs>? StatusChanged;
-        event EventHandler<ScaleErrorEventArgs>? ErrorOccurred;
+        event EventHandler<ScaleWeightChangedEventArgs> WeightChanged;
+        event EventHandler<ScaleStatusChangedEventArgs> StatusChanged;
+        event EventHandler<ScaleErrorEventArgs> ErrorOccurred;
 
         bool IsConnected();
 

@@ -1,3 +1,5 @@
+using System;
+
 namespace Groenteboer.Technova.Devices.Scales
 {
     public abstract class Scale : IScale
@@ -10,9 +12,9 @@ namespace Groenteboer.Technova.Devices.Scales
         public string CurrentUnit { get; protected set; } = "";
         public ScaleStatus Status { get; protected set; } = ScaleStatus.Disconnected;
 
-        public event EventHandler<ScaleWeightChangedEventArgs>? WeightChanged;
-        public event EventHandler<ScaleStatusChangedEventArgs>? StatusChanged;
-        public event EventHandler<ScaleErrorEventArgs>? ErrorOccurred;
+        public event EventHandler<ScaleWeightChangedEventArgs> WeightChanged;
+        public event EventHandler<ScaleStatusChangedEventArgs> StatusChanged;
+        public event EventHandler<ScaleErrorEventArgs> ErrorOccurred;
 
         public abstract bool IsConnected();
         public abstract void Start();
@@ -42,7 +44,11 @@ namespace Groenteboer.Technova.Devices.Scales
                 CurrentUnit = unit;
             }
 
-            WeightChanged?.Invoke(this, new ScaleWeightChangedEventArgs(weight, unit));
+            var handler = WeightChanged;
+            if (handler != null)
+            {
+                handler(this, new ScaleWeightChangedEventArgs(weight, unit));
+            }
         }
 
         protected void SetStatus(ScaleStatus status)
@@ -57,18 +63,20 @@ namespace Groenteboer.Technova.Devices.Scales
                 Status = status;
             }
 
-            StatusChanged?.Invoke(
-                this,
-                new ScaleStatusChangedEventArgs(status)
-            );
+            var handler = StatusChanged;
+            if (handler != null)
+            {
+                handler(this, new ScaleStatusChangedEventArgs(status));
+            }
         }
 
         protected void ReportError(string message)
         {
-            ErrorOccurred?.Invoke(
-                this,
-                new ScaleErrorEventArgs(message)
-            );
+            var handler = ErrorOccurred;
+            if (handler != null)
+            {
+                handler(this, new ScaleErrorEventArgs(message));
+            }
         }
     }
 }

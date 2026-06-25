@@ -1,4 +1,6 @@
-﻿namespace Groenteboer.Technova.Devices.Scales
+﻿using System;
+
+namespace Groenteboer.Technova.Devices.Scales
 {
     public class ScaleWeightChangedEventArgs : EventArgs
     {
